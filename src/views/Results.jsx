@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -22,6 +22,7 @@ import { hasSupabaseConfig } from "../lib/supabase.js";
 
 export default function Results() {
   const { code } = useParams();
+  const nav = useNavigate();
   const [session, setSession] = useState(null);
   const [responses, setResponses] = useState([]);
   const [loadError, setLoadError] = useState("");
@@ -187,6 +188,9 @@ export default function Results() {
       )}
 
       <div className="toolbar">
+        <button className="btn primary small" onClick={() => nav(`/p/${code}`)}>
+          ▶ Presentationsläge
+        </button>
         <button className="btn ghost small" onClick={exportCSV} disabled={n === 0}>
           ⬇ Exportera CSV
         </button>
