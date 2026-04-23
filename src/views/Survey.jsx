@@ -52,8 +52,10 @@ export default function Survey() {
     setAnswers((a) => {
       const prev = a[q.id] || [];
       if (prev.includes(opt)) return { ...a, [q.id]: prev.filter((x) => x !== opt) };
-      if (q.maxSelect && prev.length >= q.maxSelect) return a;
-      return { ...a, [q.id]: [...prev, opt] };
+      if (q.exclusiveOption === opt) return { ...a, [q.id]: [opt] };
+      const next = prev.filter((x) => x !== q.exclusiveOption);
+      if (q.maxSelect && next.length >= q.maxSelect) return a;
+      return { ...a, [q.id]: [...next, opt] };
     });
   };
 

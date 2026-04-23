@@ -30,6 +30,7 @@ export const SURVEY = {
       text: "Vad använder du AI till?",
       subtitle: "Välj alla som gäller",
       type: "multi",
+      exclusiveOption: "Använder inte AI",
       options: [
         "Skrivande / textbearbetning",
         "Kodning / programmering",
@@ -40,11 +41,12 @@ export const SURVEY = {
         "Administration / e-post",
         "Brainstorming / idégenerering",
         "Annat",
+        "Använder inte AI",
       ],
     },
     {
       id: "confidence",
-      text: "Hur trygg känner du dig med att använda AI i ditt arbete?",
+      text: "Hur trygg känner du dig med att använda AI i arbetet eller dina studier?",
       type: "scale",
       min: 1,
       max: 5,
