@@ -1,10 +1,10 @@
 export const SURVEY = {
   title: "AI och lärande",
-  subtitle: "Anonym enkät — 5 korta frågor",
+  subtitle: "Anonym enkät — 6 korta frågor",
   questions: [
     {
       id: "frequency",
-      text: "Hur ofta använder du AI-verktyg?",
+      text: "Hur ofta använder du AI på jobbet eller vid studier?",
       type: "single",
       options: ["Dagligen", "Varje vecka", "Varje månad", "Sällan", "Aldrig"],
     },
@@ -36,6 +36,7 @@ export const SURVEY = {
         "Litteratursökning",
         "Dataanalys",
         "Undervisning / kursutveckling",
+        "Studera",
         "Administration / e-post",
         "Brainstorming / idégenerering",
         "Annat",
@@ -48,6 +49,19 @@ export const SURVEY = {
       min: 1,
       max: 5,
       labels: ["Inte alls trygg", "Mycket trygg"],
+    },
+    {
+      id: "learning_impact",
+      text: "Hur upplever du att AI påverkar ditt lärande?",
+      type: "single",
+      options: [
+        "Förbättrar tydligt",
+        "Förbättrar något",
+        "Ingen märkbar påverkan",
+        "Försämrar något",
+        "Försämrar tydligt",
+        "Har inte reflekterat",
+      ],
     },
     {
       id: "barriers",
