@@ -62,6 +62,23 @@ npm run dev
 
 Nästa tillfälle: skapa en ny session i admin — tidigare resultat ligger kvar separat.
 
+## Jämför grupper (t.ex. handledare vs doktorander)
+
+När du skapar en enkät i admin kan du fylla i fältet **"Grupper"** med kommaseparerade namn, t.ex. `Doktorand, Handledare`. Då:
+
+- Första frågan för respondenten blir "Vem är du?" med grupperna som val
+- Resultatsidan får filter-chips för att se All / Doktorand / Handledare
+- Presentationsläget får en "Jämför grupper"-knapp som visar staplar per grupp sida vid sida
+- CSV-exporten får en `group`-kolumn
+
+Lämna fältet tomt om du inte vill använda gruppering — det funkar exakt som innan.
+
+**Uppgradering av befintlig databas:** om du skapade projektet innan detta fanns, kör den här i Supabase SQL Editor (säker att köra flera gånger):
+
+```sql
+alter table public.sessions add column if not exists audience_groups text[];
+```
+
 ## Anpassa frågorna
 
 Frågorna ligger i `src/lib/survey.js`. Stödda typer:

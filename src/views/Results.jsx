@@ -28,6 +28,7 @@ export default function Results() {
   const [loadError, setLoadError] = useState("");
   const [focusIdx, setFocusIdx] = useState(null);
   const [showQR, setShowQR] = useState(true);
+  const [groupFilter, setGroupFilter] = useState("__all__");
 
   useEffect(() => {
     let cancelled = false;
@@ -71,12 +72,30 @@ export default function Results() {
     return `${origin}#/s/${code}`;
   }, [code]);
 
-  const n = responses.length;
+  const groups = session?.audience_groups || [];
+  const hasGroups = groups.length > 0;
+
+  const groupCounts = useMemo(() => {
+    const m = {};
+    responses.forEach((r) => {
+      const g = r.answers?._group || "(okänd)";
+      m[g] = (m[g] || 0) + 1;
+    });
+    return m;
+  }, [responses]);
+
+  const filteredResponses = useMemo(() => {
+    if (!hasGroups || groupFilter === "__all__") return responses;
+    return responses.filter((r) => r.answers?._group === groupFilter);
+  }, [responses, groupFilter, hasGroups]);
+
+  const n = filteredResponses.length;
+  const totalN = responses.length;
 
   const tally = useCallback(
     (qId) => {
       const counts = {};
-      responses.forEach((r) => {
+      filteredResponses.forEach((r) => {
         const val = r.answers?.[qId];
         if (Array.isArray(val)) {
           val.forEach((v) => {
@@ -88,21 +107,25 @@ export default function Results() {
       });
       return counts;
     },
-    [responses]
+    [filteredResponses]
   );
 
   const exportCSV = () => {
-    const headers = ["created_at", ...SURVEY.questions.map((q) => q.id)];
+    const headers = [
+      "created_at",
+      ...(hasGroups ? ["group"] : []),
+      ...SURVEY.questions.map((q) => q.id),
+    ];
     const rows = responses.map((r) => {
-      return [
-        r.created_at,
-        ...SURVEY.questions.map((q) => {
-          const v = r.answers?.[q.id];
-          if (Array.isArray(v)) return `"${v.join("; ").replace(/"/g, '""')}"`;
-          if (v === undefined || v === null) return "";
-          return `"${String(v).replace(/"/g, '""')}"`;
-        }),
-      ].join(",");
+      const cells = [r.created_at];
+      if (hasGroups) cells.push(`"${String(r.answers?._group || "").replace(/"/g, '""')}"`);
+      SURVEY.questions.forEach((q) => {
+        const v = r.answers?.[q.id];
+        if (Array.isArray(v)) cells.push(`"${v.join("; ").replace(/"/g, '""')}"`);
+        else if (v === undefined || v === null) cells.push("");
+        else cells.push(`"${String(v).replace(/"/g, '""')}"`);
+      });
+      return cells.join(",");
     });
     const csv = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -191,7 +214,7 @@ export default function Results() {
         <button className="btn primary small" onClick={() => nav(`/p/${code}`)}>
           ▶ Presentationsläge
         </button>
-        <button className="btn ghost small" onClick={exportCSV} disabled={n === 0}>
+        <button className="btn ghost small" onClick={exportCSV} disabled={totalN === 0}>
           ⬇ Exportera CSV
         </button>
         <button className="btn ghost small" onClick={toggleStatus}>
@@ -199,10 +222,35 @@ export default function Results() {
         </button>
       </div>
 
-      {n === 0 ? (
+      {hasGroups && (
+        <div className="group-filter">
+          <button
+            className={"chip" + (groupFilter === "__all__" ? " active" : "")}
+            onClick={() => setGroupFilter("__all__")}
+          >
+            Alla ({totalN})
+          </button>
+          {groups.map((g) => (
+            <button
+              key={g}
+              className={"chip" + (groupFilter === g ? " active" : "")}
+              onClick={() => setGroupFilter(g)}
+            >
+              {g} ({groupCounts[g] || 0})
+            </button>
+          ))}
+        </div>
+      )}
+
+      {totalN === 0 ? (
         <div className="card empty">
           <div className="empty-icon">📊</div>
           <p>Inga svar ännu. Dela koden med din publik!</p>
+        </div>
+      ) : n === 0 ? (
+        <div className="card empty">
+          <div className="empty-icon">🔍</div>
+          <p>Inga svar i "{groupFilter}" ännu.</p>
         </div>
       ) : (
         SURVEY.questions.map((q, i) => (
@@ -210,7 +258,7 @@ export default function Results() {
             key={q.id}
             q={q}
             counts={tally(q.id)}
-            responses={responses}
+            responses={filteredResponses}
             total={n}
             focused={focusIdx === i}
             onFocus={() => setFocusIdx(focusIdx === i ? null : i)}

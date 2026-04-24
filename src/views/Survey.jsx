@@ -16,7 +16,22 @@ export default function Survey() {
   const [done, setDone] = useState(false);
   const [scaleHover, setScaleHover] = useState(null);
 
-  const questions = SURVEY.questions;
+  const questions = useMemo(() => {
+    const groups = session?.audience_groups;
+    if (Array.isArray(groups) && groups.length > 0) {
+      return [
+        {
+          id: "_group",
+          text: "Vem är du?",
+          subtitle: "Välj vilken grupp du tillhör",
+          type: "single",
+          options: groups,
+        },
+        ...SURVEY.questions,
+      ];
+    }
+    return SURVEY.questions;
+  }, [session]);
   const q = questions[step];
 
   useEffect(() => {

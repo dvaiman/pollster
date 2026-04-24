@@ -26,6 +26,7 @@ export default function Present() {
   const [responses, setResponses] = useState([]);
   const [loadError, setLoadError] = useState("");
   const [slide, setSlide] = useState(0);
+  const [compare, setCompare] = useState(false);
 
   const slides = useMemo(() => {
     return [{ kind: "intro" }, ...SURVEY.questions.map((q) => ({ kind: "q", q }))];
@@ -125,12 +126,17 @@ export default function Present() {
 
   const current = slides[slide];
   const n = responses.length;
+  const groups = session.audience_groups || [];
+  const hasGroups = groups.length > 0;
+  const showCompare = hasGroups && compare && current.kind === "q";
 
   return (
     <div className="present-stage">
       <div className="present-content" key={slide}>
         {current.kind === "intro" ? (
           <IntroSlide session={session} responseCount={n} />
+        ) : showCompare ? (
+          <GroupedQuestionSlide q={current.q} responses={responses} groups={groups} />
         ) : (
           <QuestionSlide q={current.q} responses={responses} total={n} />
         )}
@@ -168,6 +174,15 @@ export default function Present() {
         <span className="badge small">
           <span className="live-dot" /> {n} svar
         </span>
+        {hasGroups && current.kind === "q" && (
+          <button
+            className={"btn small " + (compare ? "primary" : "ghost")}
+            onClick={() => setCompare((c) => !c)}
+            title="Jämför grupper"
+          >
+            {compare ? "Sammanslaget" : "Jämför grupper"}
+          </button>
+        )}
         <button className="btn ghost small" onClick={toggleFullscreen} title="Fullskärm (F)">
           ⛶
         </button>
@@ -311,6 +326,150 @@ function QuestionSlide({ q, responses, total }) {
                 }
               />
             </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+function GroupedQuestionSlide({ q, responses, groups }) {
+  const byGroup = {};
+  groups.forEach((g) => (byGroup[g] = []));
+  responses.forEach((r) => {
+    const g = r.answers?._group;
+    if (g && byGroup[g]) byGroup[g].push(r);
+  });
+  const groupTotals = Object.fromEntries(groups.map((g) => [g, byGroup[g].length]));
+
+  const groupColor = (i) => COLORS.barColors[i % COLORS.barColors.length];
+
+  if (q.type === "scale") {
+    const means = groups.map((g) => {
+      const vals = byGroup[g]
+        .map((r) => r.answers?.[q.id])
+        .filter((v) => v !== undefined && v !== null);
+      return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+    });
+    const data = [];
+    for (let v = q.min; v <= q.max; v++) {
+      const row = { name: String(v) };
+      groups.forEach((g) => {
+        row[g] = byGroup[g].filter((r) => r.answers?.[q.id] === v).length;
+      });
+      data.push(row);
+    }
+    return (
+      <div className="slide q-slide">
+        <h2 className="present-q-text">{q.text}</h2>
+        <div className="group-means">
+          {groups.map((g, i) => (
+            <div key={g} className="group-mean-card">
+              <div className="group-mean-label" style={{ color: groupColor(i) }}>
+                {g} <span className="muted small">(n={groupTotals[g]})</span>
+              </div>
+              <div className="group-mean-num" style={{ color: groupColor(i) }}>
+                {means[i] !== null ? means[i].toFixed(1) : "–"}
+                <span className="muted" style={{ fontSize: "0.5em" }}> / {q.max}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="present-chart">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 24, right: 24, left: 0, bottom: 16 }}>
+              <XAxis dataKey="name" stroke={COLORS.textMuted} tick={{ fontSize: 18 }} />
+              <YAxis stroke={COLORS.textMuted} allowDecimals={false} tick={{ fontSize: 14 }} />
+              <Tooltip
+                contentStyle={{
+                  background: COLORS.card,
+                  border: `1px solid ${COLORS.border}`,
+                  borderRadius: 8,
+                  color: COLORS.text,
+                }}
+                cursor={{ fill: "rgba(255,255,255,0.04)" }}
+              />
+              {groups.map((g, i) => (
+                <Bar key={g} dataKey={g} fill={groupColor(i)} radius={[8, 8, 0, 0]} />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="present-scale-ends">
+          <span>{q.labels[0]}</span>
+          <span>{q.labels[1]}</span>
+        </div>
+      </div>
+    );
+  }
+
+  const opts = q.options || [];
+  const data = opts.map((opt) => {
+    const row = { name: opt };
+    groups.forEach((g) => {
+      const total = groupTotals[g] || 0;
+      const count = byGroup[g].reduce((acc, r) => {
+        const v = r.answers?.[q.id];
+        if (Array.isArray(v)) return acc + (v.includes(opt) ? 1 : 0);
+        return acc + (v === opt ? 1 : 0);
+      }, 0);
+      row[g] = total > 0 ? Math.round((count / total) * 100) : 0;
+      row[`${g}__count`] = count;
+    });
+    return row;
+  });
+
+  return (
+    <div className="slide q-slide">
+      <h2 className="present-q-text">{q.text}</h2>
+      <p className="present-q-sub">
+        {groups.map((g, i) => (
+          <span key={g} className="group-legend-item">
+            <span className="legend-swatch" style={{ background: groupColor(i) }} />
+            {g} (n={groupTotals[g]})
+            {i < groups.length - 1 && <span>   </span>}
+          </span>
+        ))}
+      </p>
+      <div className="present-chart">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={data}
+            layout="vertical"
+            margin={{ top: 8, right: 120, left: 8, bottom: 8 }}
+          >
+            <XAxis type="number" hide domain={[0, 100]} unit="%" />
+            <YAxis
+              type="category"
+              dataKey="name"
+              stroke={COLORS.text}
+              width={320}
+              tick={{ fontSize: 18, fill: COLORS.text }}
+            />
+            <Tooltip
+              contentStyle={{
+                background: COLORS.card,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: 8,
+                color: COLORS.text,
+              }}
+              cursor={{ fill: "rgba(255,255,255,0.04)" }}
+              formatter={(v, name, entry) => {
+                const count = entry?.payload?.[`${name}__count`];
+                return [`${v}%${count !== undefined ? ` (${count} st)` : ""}`, name];
+              }}
+            />
+            {groups.map((g, i) => (
+              <Bar key={g} dataKey={g} fill={groupColor(i)} radius={[0, 8, 8, 0]}>
+                <LabelList
+                  dataKey={g}
+                  position="right"
+                  fill={COLORS.text}
+                  fontSize={14}
+                  formatter={(v) => `${v}%`}
+                />
+              </Bar>
+            ))}
           </BarChart>
         </ResponsiveContainer>
       </div>

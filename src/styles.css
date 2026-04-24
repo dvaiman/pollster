@@ -640,6 +640,80 @@ a {
   }
 }
 
+/* Group filter chips */
+.group-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 4px;
+}
+.chip {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+.chip.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.create-form-v {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 16px;
+}
+.create-form-v .btn {
+  align-self: flex-end;
+}
+
+.group-means {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.group-mean-card {
+  text-align: center;
+}
+.group-mean-label {
+  font-size: clamp(14px, 1.2vw, 18px);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.group-mean-num {
+  font-size: clamp(48px, 6vw, 96px);
+  font-weight: 700;
+  line-height: 1;
+}
+.group-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 20px;
+}
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
 /* Presentation mode */
 .present-stage {
   position: fixed;

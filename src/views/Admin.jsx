@@ -16,6 +16,7 @@ export default function Admin() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
+  const [newGroups, setNewGroups] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const nav = useNavigate();
@@ -59,12 +60,20 @@ export default function Admin() {
     setCreating(true);
     setError("");
     try {
+      const groups = newGroups
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
       let code;
       let ok = false;
       for (let i = 0; i < 5 && !ok; i++) {
         code = generateSessionCode();
         try {
-          await createSession(code, newName || `Enkät ${new Date().toLocaleDateString("sv-SE")}`);
+          await createSession(
+            code,
+            newName || `Enkät ${new Date().toLocaleDateString("sv-SE")}`,
+            groups.length > 0 ? groups : null
+          );
           ok = true;
         } catch (err) {
           if (!String(err.message || "").includes("duplicate")) throw err;
@@ -72,6 +81,7 @@ export default function Admin() {
       }
       if (!ok) throw new Error("Kunde inte generera unik kod");
       setNewName("");
+      setNewGroups("");
       await load();
       nav(`/r/${code}`);
     } catch (e) {
@@ -162,11 +172,17 @@ export default function Admin() {
       <h1 className="admin-title">Admin</h1>
       <p className="muted small">Skapa en enkät-session för varje tillfälle du kör.</p>
 
-      <form onSubmit={create} className="card create-form">
+      <form onSubmit={create} className="card create-form-v">
         <input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="Namn (t.ex. 'Konferens 2026-04-23')"
+          className="text-input"
+        />
+        <input
+          value={newGroups}
+          onChange={(e) => setNewGroups(e.target.value)}
+          placeholder="Grupper, kommaseparerat (t.ex. 'Doktorand, Handledare'). Lämna tomt om inte tillämpligt."
           className="text-input"
         />
         <button type="submit" className="btn primary" disabled={creating}>

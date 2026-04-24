@@ -1,9 +1,11 @@
 import { supabase } from "./supabase.js";
 
-export async function createSession(code, name) {
+export async function createSession(code, name, audienceGroups = null) {
+  const groups =
+    Array.isArray(audienceGroups) && audienceGroups.length > 0 ? audienceGroups : null;
   const { data, error } = await supabase
     .from("sessions")
-    .insert({ code, name, status: "open" })
+    .insert({ code, name, status: "open", audience_groups: groups })
     .select()
     .single();
   if (error) throw error;
