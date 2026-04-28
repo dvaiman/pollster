@@ -1,6 +1,6 @@
 export const SURVEY = {
   title: "AI och lärande",
-  subtitle: "Anonym enkät — 6 korta frågor",
+  subtitle: "Anonym enkät — 8 korta frågor",
   questions: [
     {
       id: "frequency",
@@ -51,6 +51,30 @@ export const SURVEY = {
       min: 1,
       max: 5,
       labels: ["Inte alls trygg", "Mycket trygg"],
+    },
+    {
+      id: "utility",
+      text: "Hur lätt eller svårt tycker du det är att få användbara svar från AI?",
+      type: "scale",
+      min: 1,
+      max: 5,
+      labels: ["Mycket svårt", "Mycket lätt"],
+    },
+    {
+      id: "difficulty_aspects",
+      text: "Vad är svårast med att använda AI?",
+      subtitle: "Om du använder AI — välj alla som gäller",
+      type: "multi",
+      exclusiveOption: ["Inget upplevs särskilt svårt", "Använder inte AI"],
+      options: [
+        "Att formulera bra frågor / prompts",
+        "Att bedöma om svaret stämmer",
+        "Att veta vilka verktyg som passar uppgiften",
+        "Att integrera AI i mitt arbetsflöde",
+        "Att förstå när AI inte är rätt verktyg",
+        "Inget upplevs särskilt svårt",
+        "Använder inte AI",
+      ],
     },
     {
       id: "learning_impact",
