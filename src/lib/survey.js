@@ -1,4 +1,5 @@
-export const SURVEY = {
+const aiSurvey = {
+  id: "ai",
   title: "AI och lärande",
   subtitle: "Anonym enkät — 8 korta frågor",
   questions: [
@@ -107,6 +108,128 @@ export const SURVEY = {
     },
   ],
 };
+
+const testSurvey = {
+  id: "test",
+  title: "Snabbtest",
+  subtitle: "För att testa systemet — 3 korta frågor",
+  questions: [
+    {
+      id: "mood",
+      text: "Hur är dagen så här långt?",
+      type: "scale",
+      min: 1,
+      max: 5,
+      labels: ["Riktigt dålig", "Riktigt bra"],
+    },
+    {
+      id: "today",
+      text: "Vilka av dessa har du gjort idag?",
+      subtitle: "Välj alla som gäller",
+      type: "multi",
+      exclusiveOption: "Inget av detta",
+      options: [
+        "Tränat",
+        "Lagat mat",
+        "Läst en bok eller artikel",
+        "Promenerat ute",
+        "Tittat på TV / serie",
+        "Pratat med en vän",
+        "Inget av detta",
+      ],
+    },
+    {
+      id: "season",
+      text: "Vilken är din favoritårstid?",
+      type: "single",
+      options: ["Vår", "Sommar", "Höst", "Vinter"],
+    },
+  ],
+};
+
+const conferenceSurvey = {
+  id: "feedback",
+  title: "Konferensfeedback",
+  subtitle: "Anonym feedback — 5 korta frågor",
+  questions: [
+    {
+      id: "value",
+      text: "Hur värdefull var dagen för dig?",
+      type: "scale",
+      min: 1,
+      max: 5,
+      labels: ["Inte alls värdefull", "Mycket värdefull"],
+    },
+    {
+      id: "highlights",
+      text: "Vilka delar var mest givande?",
+      subtitle: "Välj alla som gäller",
+      type: "multi",
+      exclusiveOption: "Inget särskilt stack ut",
+      options: [
+        "Föreläsningarna",
+        "Workshops / praktiska moment",
+        "Paneldiskussioner",
+        "Nätverkandet",
+        "Pauserna och det sociala",
+        "Materialet / handouts",
+        "Inget särskilt stack ut",
+      ],
+    },
+    {
+      id: "nps",
+      text: "Hur sannolikt är det att du rekommenderar dagen till en kollega?",
+      type: "scale",
+      min: 0,
+      max: 10,
+      labels: ["Inte alls sannolikt", "Mycket sannolikt"],
+    },
+    {
+      id: "improvements",
+      text: "Vad kan förbättras till nästa gång?",
+      subtitle: "Välj upp till 3",
+      type: "multi",
+      maxSelect: 3,
+      exclusiveOption: "Inget behöver ändras",
+      options: [
+        "Mer interaktivitet / publikinteraktion",
+        "Fler / längre pauser",
+        "Bättre lokal eller teknik",
+        "Tydligare program / agenda",
+        "Mer praktiska exempel",
+        "Mer tid för frågor och diskussion",
+        "Bredare ämnesutbud",
+        "Inget behöver ändras",
+      ],
+    },
+    {
+      id: "length",
+      text: "Vad tyckte du om dagens längd?",
+      type: "single",
+      options: ["För kort", "Lagom", "För lång"],
+    },
+  ],
+};
+
+export const SURVEYS = {
+  ai: aiSurvey,
+  test: testSurvey,
+  feedback: conferenceSurvey,
+};
+
+export const DEFAULT_SURVEY_ID = "ai";
+
+export function getSurvey(id) {
+  return SURVEYS[id] || SURVEYS[DEFAULT_SURVEY_ID];
+}
+
+export const SURVEY_LIST = Object.values(SURVEYS).map((s) => ({
+  id: s.id,
+  title: s.title,
+  questionCount: s.questions.length,
+}));
+
+export const SURVEY = aiSurvey;
 
 export const COLORS = {
   bg: "#0a0f1a",

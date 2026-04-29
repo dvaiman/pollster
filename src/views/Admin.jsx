@@ -6,7 +6,7 @@ import {
   updateSessionStatus,
   deleteSession,
 } from "../lib/api.js";
-import { generateSessionCode, SURVEY } from "../lib/survey.js";
+import { generateSessionCode, SURVEY_LIST, getSurvey, DEFAULT_SURVEY_ID } from "../lib/survey.js";
 import { hasSupabaseConfig } from "../lib/supabase.js";
 
 export default function Admin() {
@@ -17,6 +17,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
   const [newGroups, setNewGroups] = useState("");
+  const [newSurveyId, setNewSurveyId] = useState(DEFAULT_SURVEY_ID);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const nav = useNavigate();
@@ -66,13 +67,15 @@ export default function Admin() {
         .filter(Boolean);
       let code;
       let ok = false;
+      const surveyTitle = getSurvey(newSurveyId).title;
       for (let i = 0; i < 5 && !ok; i++) {
         code = generateSessionCode();
         try {
           await createSession(
             code,
-            newName || `Enkät ${new Date().toLocaleDateString("sv-SE")}`,
-            groups.length > 0 ? groups : null
+            newName || `${surveyTitle} ${new Date().toLocaleDateString("sv-SE")}`,
+            groups.length > 0 ? groups : null,
+            newSurveyId
           );
           ok = true;
         } catch (err) {
@@ -173,10 +176,24 @@ export default function Admin() {
       <p className="muted small">Skapa en enkät-session för varje tillfälle du kör.</p>
 
       <form onSubmit={create} className="card create-form-v">
+        <label className="field">
+          <span className="field-label">Mall</span>
+          <select
+            value={newSurveyId}
+            onChange={(e) => setNewSurveyId(e.target.value)}
+            className="text-input"
+          >
+            {SURVEY_LIST.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.title} ({s.questionCount} frågor)
+              </option>
+            ))}
+          </select>
+        </label>
         <input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          placeholder="Namn (t.ex. 'Konferens 2026-04-23')"
+          placeholder="Namn (t.ex. 'Konferens 2026-04-23'). Lämna tomt = mallens namn + datum."
           className="text-input"
         />
         <input
@@ -204,6 +221,7 @@ export default function Admin() {
                 <div className="session-name">{s.name || "Utan namn"}</div>
                 <div className="muted small">
                   <span className="mono">{s.code}</span> ·{" "}
+                  {getSurvey(s.survey_id).title} ·{" "}
                   {new Date(s.created_at).toLocaleString("sv-SE")} ·{" "}
                   <span className={s.status === "open" ? "pill live" : "pill closed"}>
                     {s.status}
@@ -228,9 +246,12 @@ export default function Admin() {
       )}
 
       <details className="survey-preview">
-        <summary>Förhandsgranska frågorna ({SURVEY.questions.length})</summary>
+        <summary>
+          Förhandsgranska frågorna i "{getSurvey(newSurveyId).title}" (
+          {getSurvey(newSurveyId).questions.length})
+        </summary>
         <ol>
-          {SURVEY.questions.map((q) => (
+          {getSurvey(newSurveyId).questions.map((q) => (
             <li key={q.id}>
               <strong>{q.text}</strong>{" "}
               <span className="muted small">({q.type})</span>

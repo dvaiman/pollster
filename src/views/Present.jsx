@@ -11,7 +11,7 @@ import {
   LabelList,
 } from "recharts";
 import { QRCodeSVG } from "qrcode.react";
-import { SURVEY, COLORS } from "../lib/survey.js";
+import { getSurvey, COLORS } from "../lib/survey.js";
 import {
   getSessionByCode,
   fetchResponses,
@@ -29,8 +29,9 @@ export default function Present() {
   const [compare, setCompare] = useState(false);
 
   const slides = useMemo(() => {
-    return [{ kind: "intro" }, ...SURVEY.questions.map((q) => ({ kind: "q", q }))];
-  }, []);
+    const surveyDef = getSurvey(session?.survey_id);
+    return [{ kind: "intro" }, ...surveyDef.questions.map((q) => ({ kind: "q", q }))];
+  }, [session]);
 
   useEffect(() => {
     let cancelled = false;

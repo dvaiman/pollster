@@ -77,15 +77,30 @@ Lämna fältet tomt om du inte vill använda gruppering — det funkar exakt som
 
 ```sql
 alter table public.sessions add column if not exists audience_groups text[];
+alter table public.sessions add column if not exists survey_id text;
 ```
+
+## Flera enkätmallar
+
+`src/lib/survey.js` exporterar en `SURVEYS`-map där varje nyckel är ett mall-id. När du skapar en session i admin får du välja vilken mall sessionen ska köra. Default-mallen är `ai`.
+
+För att lägga till en ny mall:
+
+1. Öppna `src/lib/survey.js`
+2. Skapa en ny survey-definition i samma form som `aiSurvey`
+3. Lägg till den i `SURVEYS` med ett unikt id, t.ex. `mall42: nyMall`
+4. Commit + push — Actions bygger om
+5. Nya mallen dyker upp i admin-dropdownen direkt
+
+Sessioner sparar sitt `survey_id` i databasen, så gamla sessioner fortsätter köra sin ursprungliga mall även om koden ändras (så länge mallens id finns kvar).
 
 ## Anpassa frågorna
 
 Frågorna ligger i `src/lib/survey.js`. Stödda typer:
 
 - `single` — en radioknapp
-- `multi` — flera kryssrutor (valfri `maxSelect`)
-- `scale` — numerisk skala (1–5, 1–7 etc.)
+- `multi` — flera kryssrutor (valfri `maxSelect`, valfri `exclusiveOption` som enskild sträng eller array av exklusiva opt-out-alternativ)
+- `scale` — numerisk skala (1–5, 0–10 etc., med text-etiketter på ändarna)
 
 Ändra, commit, push — GitHub Actions bygger om automatiskt.
 

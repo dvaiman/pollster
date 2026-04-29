@@ -11,7 +11,7 @@ import {
   LabelList,
 } from "recharts";
 import { QRCodeSVG } from "qrcode.react";
-import { SURVEY, COLORS } from "../lib/survey.js";
+import { getSurvey, COLORS } from "../lib/survey.js";
 import {
   getSessionByCode,
   fetchResponses,
@@ -72,6 +72,7 @@ export default function Results() {
     return `${origin}#/s/${code}`;
   }, [code]);
 
+  const surveyDef = getSurvey(session?.survey_id);
   const groups = session?.audience_groups || [];
   const hasGroups = groups.length > 0;
 
@@ -114,12 +115,12 @@ export default function Results() {
     const headers = [
       "created_at",
       ...(hasGroups ? ["group"] : []),
-      ...SURVEY.questions.map((q) => q.id),
+      ...surveyDef.questions.map((q) => q.id),
     ];
     const rows = responses.map((r) => {
       const cells = [r.created_at];
       if (hasGroups) cells.push(`"${String(r.answers?._group || "").replace(/"/g, '""')}"`);
-      SURVEY.questions.forEach((q) => {
+      surveyDef.questions.forEach((q) => {
         const v = r.answers?.[q.id];
         if (Array.isArray(v)) cells.push(`"${v.join("; ").replace(/"/g, '""')}"`);
         else if (v === undefined || v === null) cells.push("");
@@ -253,7 +254,7 @@ export default function Results() {
           <p>Inga svar i "{groupFilter}" ännu.</p>
         </div>
       ) : (
-        SURVEY.questions.map((q, i) => (
+        surveyDef.questions.map((q, i) => (
           <QuestionResult
             key={q.id}
             q={q}

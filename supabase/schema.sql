@@ -7,12 +7,14 @@ create table if not exists public.sessions (
   name text,
   status text not null default 'open' check (status in ('open', 'closed')),
   audience_groups text[],
+  survey_id text,
   created_at timestamptz not null default now(),
   closed_at timestamptz
 );
 
 -- Upgrade path for existing databases (safe to run multiple times)
 alter table public.sessions add column if not exists audience_groups text[];
+alter table public.sessions add column if not exists survey_id text;
 
 create table if not exists public.responses (
   id uuid primary key default gen_random_uuid(),

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { SURVEY } from "../lib/survey.js";
+import { getSurvey } from "../lib/survey.js";
 import { getSessionByCode, submitResponse } from "../lib/api.js";
 import { hasSupabaseConfig } from "../lib/supabase.js";
 
@@ -17,6 +17,7 @@ export default function Survey() {
   const [scaleHover, setScaleHover] = useState(null);
 
   const questions = useMemo(() => {
+    const surveyDef = getSurvey(session?.survey_id);
     const groups = session?.audience_groups;
     if (Array.isArray(groups) && groups.length > 0) {
       return [
@@ -27,10 +28,10 @@ export default function Survey() {
           type: "single",
           options: groups,
         },
-        ...SURVEY.questions,
+        ...surveyDef.questions,
       ];
     }
-    return SURVEY.questions;
+    return surveyDef.questions;
   }, [session]);
   const q = questions[step];
 
