@@ -2,9 +2,9 @@ name: Keep Supabase awake
 
 on:
   schedule:
-    # Twice a week (Mon and Thu at 06:00 UTC) so we never hit the
-    # 7-day inactivity threshold on the Supabase free tier.
-    - cron: "0 6 * * 1,4"
+    # Daily at 06:00 UTC — well below Supabase free tier's 7-day inactivity
+    # threshold, with margin if a single run is skipped.
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 jobs:
