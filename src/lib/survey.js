@@ -7,7 +7,7 @@ const aiSurvey = {
       id: "frequency",
       text: "Hur ofta använder du AI på jobbet eller vid studier?",
       type: "single",
-      options: ["Dagligen", "Varje vecka", "Varje månad", "Sällan", "Aldrig"],
+      options: ["Flera gånger om dagen", "Dagligen", "Varje vecka", "Varje månad", "Sällan", "Aldrig"],
     },
     {
       id: "tools",
